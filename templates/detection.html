@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Detection - AI Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #fff 100%);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-2 border-blue-100">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="bi bi-brain text-3xl text-blue-500"></i>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                        Brain Tumor Detection System
+                    </h1>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="text-gray-600">
+                        Welcome, <span class="font-semibold">{{ user.first_name }} {{ user.last_name }}</span>
+                    </div>
+                    <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                        <i class="bi bi-box-arrow-right mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        
+        <!-- Status Messages -->
+        <div id="messageContainer"></div>
+
+        <!-- Model Loading Section -->
+        <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
+            <div class="text-center">
+                <i class="bi bi-cpu text-6xl text-blue-500 mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">AI Model Status</h2>
+                <p class="text-gray-600 mb-6">Load the brain tumor detection model to begin analysis</p>
+                
+                <button 
+                    id="loadModelBtn" 
+                    onclick="loadModel()"
+                    class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg transition-all"
+                >
+                    <i class="bi bi-download mr-2"></i>Load AI Model
+                </button>
+                
+                <div id="modelStatus" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="bg-white rounded-3xl shadow-lg p-8 mb-8" id="uploadSection" style="display: none;">
+            <div class="text-center mb-8">
+                <i class="bi bi-cloud-upload text-6xl text-blue-500 mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Upload Brain Scan</h2>
+                <p class="text-gray-600">Upload a brain MRI or CT scan image for AI analysis</p>
+            </div>
+
+            <form id="uploadForm" class="max-w-2xl mx-auto">
+                <div class="border-2 border-dashed border-blue-300 rounded-2xl p-12 text-center hover:border-blue-400 transition-all">
+                    <input 
+                        type="file" 
+                        id="imageInput" 
+                        name="file"
+                        accept="image/*"
+                        multiple
+                        class="hidden"
+                        onchange="previewImages(this)"
+                    >
+                    
+                    <div id="uploadPrompt">
+                        <i class="bi bi-images text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-4">Click to select or drag and drop one or more brain scan images</p>
+                        <button 
+                            type="button" 
+                            onclick="document.getElementById('imageInput').click()"
+                            class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all"
+                        >
+                            <i class="bi bi-folder2-open mr-2"></i>Select Image(s)
+                        </button>
+                        <p class="text-sm text-gray-500 mt-4">Supported formats: JPG, PNG, JPEG &mdash; multiple images supported</p>
+                    </div>
+
+                    <div id="imagePreview" class="hidden">
+                        <div id="previewGrid" class="flex flex-wrap gap-3 justify-center mb-4"></div>
+                        <p class="text-gray-600 mb-4" id="selectedCount"></p>
+                        <div class="flex gap-4 justify-center">
+                            <button 
+                                type="button" 
+                                onclick="clearImage()"
+                                class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
+                            >
+                                <i class="bi bi-x-circle mr-1"></i>Clear
+                            </button>
+                            <button 
+                                type="submit" 
+                                id="analyzeBtn"
+                                class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all"
+                            >
+                                <i class="bi bi-search mr-2"></i>Analyze Scan(s)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <div class="bg-white rounded-3xl shadow-lg p-8 mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+                    <i class="bi bi-graph-up text-blue-500 mr-3"></i>Analysis Results
+                </h2>
+
+                <!-- Per-image result cards -->
+                <div id="allResultCards"></div>
+
+                <div class="mt-8 flex flex-wrap gap-4 justify-center">
+                    <button 
+                        onclick="startNewAnalysis()"
+                        class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg transition-all"
+                    >
+                        <i class="bi bi-arrow-clockwise mr-2"></i>Analyze Another Scan
+                    </button>
+                    <button 
+                        id="downloadReportBtn"
+                        onclick="downloadReport()"
+                        class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg transition-all"
+                    >
+                        <i class="bi bi-file-earmark-pdf mr-2"></i>Download PDF Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let modelLoaded = false;
+        // Store results for PDF generation
+        let lastResults = [];
+
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const alertClass = type === 'success' ? 'bg-green-50 border-green-200 text-green-700' :
+                              type === 'error'   ? 'bg-red-50 border-red-200 text-red-700' :
+                              'bg-blue-50 border-blue-200 text-blue-700';
+            const iconClass  = type === 'success' ? 'bi-check-circle-fill' :
+                               type === 'error'   ? 'bi-exclamation-circle-fill' :
+                               'bi-info-circle-fill';
+            container.innerHTML = `
+                <div class="${alertClass} border-2 rounded-xl p-4 mb-6">
+                    <p class="font-semibold flex items-center gap-2">
+                        <i class="bi ${iconClass}"></i>${message}
+                    </p>
+                </div>`;
+            setTimeout(() => { container.innerHTML = ''; }, 6000);
+        }
+
+        async function loadModel() {
+            const btn    = document.getElementById('loadModelBtn');
+            const status = document.getElementById('modelStatus');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner inline-block mr-2"></div>Loading Model...';
+            try {
+                const response = await fetch('/load_model', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const data = await response.json();
+                if (data.success) {
+                    modelLoaded = true;
+                    status.innerHTML = '<span class="text-green-600 font-semibold"><i class="bi bi-check-circle-fill mr-1"></i>Model loaded successfully!</span>';
+                    btn.style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                    showMessage('AI Model loaded successfully! You can now upload brain scans for analysis.', 'success');
+                } else {
+                    status.innerHTML = '<span class="text-red-600 font-semibold"><i class="bi bi-x-circle-fill mr-1"></i>' + data.message + '</span>';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-download mr-2"></i>Load AI Model';
+                    showMessage('Failed to load model: ' + data.message, 'error');
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="text-red-600 font-semibold"><i class="bi bi-x-circle-fill mr-1"></i>Network error occurred</span>';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-download mr-2"></i>Load AI Model';
+                showMessage('Network error: ' + error.message, 'error');
+            }
+        }
+
+        // ---- Batch image preview ----
+        function previewImages(input) {
+            if (!input.files || input.files.length === 0) return;
+            const grid = document.getElementById('previewGrid');
+            grid.innerHTML = '';
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'flex flex-col items-center gap-1';
+                    wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="w-28 h-28 object-cover rounded-lg shadow border border-blue-200" alt="${file.name}">
+                        <span class="text-xs text-gray-500 max-w-[7rem] truncate">${file.name}</span>`;
+                    grid.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+            const n = input.files.length;
+            document.getElementById('selectedCount').textContent = n === 1 ? '1 image selected' : `${n} images selected`;
+            document.getElementById('uploadPrompt').style.display = 'none';
+            document.getElementById('imagePreview').classList.remove('hidden');
+        }
+
+        function clearImage() {
+            document.getElementById('imageInput').value = '';
+            document.getElementById('previewGrid').innerHTML = '';
+            document.getElementById('uploadPrompt').style.display = 'block';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('resultsSection').classList.add('hidden');
+            lastResults = [];
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!modelLoaded) { showMessage('Please load the AI model first.', 'error'); return; }
+            const fileInput = document.getElementById('imageInput');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showMessage('Please select at least one image.', 'error'); return;
+            }
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<div class="loading-spinner inline-block mr-2"></div>Analyzing...';
+
+            const formData = new FormData();
+            Array.from(fileInput.files).forEach(f => formData.append('file', f));
+
+            try {
+                const response = await fetch('/predict', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.success) {
+                    displayResults(data.results);
+                    showMessage(`Analysis complete! ${data.results.filter(r=>r.success).length} scan(s) processed.`, 'success');
+                } else {
+                    showMessage('Analysis failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Network error during analysis: ' + error.message, 'error');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="bi bi-search mr-2"></i>Analyze Scan(s)';
+            }
+        });
+
+        function formatPlan(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-900">$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function displayResults(results) {
+            lastResults = results;
+            const container = document.getElementById('allResultCards');
+            container.innerHTML = '';
+
+            results.forEach((result, idx) => {
+                const card = document.createElement('div');
+                card.className = 'mb-8 border border-blue-100 rounded-2xl overflow-hidden shadow';
+
+                if (!result.success) {
+                    card.innerHTML = `
+                        <div class="bg-red-50 p-6">
+                            <p class="font-bold text-red-700"><i class="bi bi-exclamation-triangle mr-2"></i>Scan #${idx+1}: ${result.filename}</p>
+                            <p class="text-red-600 mt-1">${result.message}</p>
+                        </div>`;
+                    container.appendChild(card);
+                    return;
+                }
+
+                const tumorDetected = result.tumor_detected;
+                const badgeClass = tumorDetected
+                    ? 'bg-red-100 text-red-700 border border-red-300'
+                    : 'bg-green-100 text-green-700 border border-green-300';
+                const badgeIcon  = tumorDetected ? 'bi-exclamation-circle-fill' : 'bi-check-circle-fill';
+                const resultMsg  = tumorDetected
+                    ? result.result_label
+                    : 'No tumor detected in the provided image.';
+
+                card.innerHTML = `
+                    <div class="bg-blue-50 px-6 py-4 flex items-center justify-between flex-wrap gap-2">
+                        <h3 class="font-bold text-gray-800 text-lg">
+                            <i class="bi bi-file-earmark-medical text-blue-500 mr-2"></i>
+                            Scan #${idx+1} &mdash; <span class="font-normal text-gray-600">${result.filename}</span>
+                        </h3>
+                        <span class="${badgeClass} px-4 py-1 rounded-full font-semibold text-sm flex items-center gap-1">
+                            <i class="bi ${badgeIcon}"></i> ${resultMsg}
+                        </span>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6 p-6">
+                        <div class="text-center">
+                            <p class="font-semibold text-gray-600 mb-3">Scan Image / Segmentation</p>
+                            <img src="data:image/png;base64,${result.plot_image}" class="w-full rounded-xl shadow-lg border border-gray-200" alt="Scan Result">
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-700 mb-3"><i class="bi bi-robot text-blue-500 mr-1"></i>AI Medical Insights</p>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm leading-relaxed text-blue-900 max-h-96 overflow-y-auto">
+                                ${formatPlan(result.treatment_plan || 'No analysis available.')}
+                            </div>
+                        </div>
+                    </div>`;
+                container.appendChild(card);
+            });
+
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function startNewAnalysis() {
+            clearImage();
+            document.getElementById('uploadSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function downloadReport() {
+            if (!lastResults || lastResults.length === 0) {
+                showMessage('No results available to generate a report.', 'error'); return;
+            }
+            const btn = document.getElementById('downloadReportBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner inline-block mr-2"></div>Generating PDF...';
+
+            try {
+                const payload = {
+                    results: lastResults.filter(r => r.success),
+                    user_name: '{{ user.first_name }} {{ user.last_name }}'
+                };
+                const response = await fetch('/generate_report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    showMessage('Report generation failed: ' + (err.message || 'Unknown error'), 'error');
+                    return;
+                }
+                const blob = await response.blob();
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href     = url;
+                const ts   = new Date().toISOString().slice(0,19).replace(/[:T]/g, '-');
+                a.download = `BrainTumorReport_${ts}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showMessage('PDF report downloaded successfully!', 'success');
+            } catch (error) {
+                showMessage('Error generating report: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-file-earmark-pdf mr-2"></i>Download PDF Report';
+            }
+        }
+
+        // Drag and drop
+        const uploadArea = document.querySelector('.border-dashed');
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('border-blue-500', 'bg-blue-50');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('imageInput').files = files;
+                previewImages(document.getElementById('imageInput'));
+            }
+        });
+    </script>
+</body>
+</html>

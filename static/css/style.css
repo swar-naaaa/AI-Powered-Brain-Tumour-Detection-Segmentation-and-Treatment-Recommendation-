@@ -1,0 +1,271 @@
+/* Custom styles for Brain Tumor Detection System */
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #fff 100%);
+}
+
+/* Loading spinner animation */
+.loading-spinner {
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Image preview styling */
+.image-preview {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Upload area hover effects */
+.upload-area {
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #3b82f6;
+    background-color: #f8fafc;
+}
+
+.upload-area.drag-over {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    transform: scale(1.02);
+}
+
+/* Custom button styles */
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Card styling */
+.card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    border: 2px solid;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+/* Form styling */
+.form-input {
+    width: 100%;
+    padding: 12px 16px 12px 48px;
+    border: 2px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-label {
+    display: block;
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* Icon positioning */
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    color: #9ca3af;
+}
+
+/* Results section styling */
+.results-grid {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .results-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Medical disclaimer styling */
+.medical-disclaimer {
+    background-color: #fefce8;
+    border: 2px solid #fde047;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 24px;
+}
+
+.medical-disclaimer h6 {
+    color: #a16207;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.medical-disclaimer p {
+    color: #a16207;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Treatment plan styling */
+.treatment-plan {
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 16px;
+    line-height: 1.7;
+}
+
+.treatment-plan h3 {
+    color: #1f2937;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.treatment-plan ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.treatment-plan li {
+    margin-bottom: 8px;
+    padding-left: 24px;
+    position: relative;
+}
+
+.treatment-plan li::before {
+    content: "•";
+    color: #3b82f6;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .card {
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+    
+    .results-grid {
+        gap: 16px;
+    }
+}
+
+/* Animation for smooth transitions */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header styling */
+.header {
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid #e5f3ff;
+}
+
+/* Progress indicator */
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+}
+
+.step-circle.active {
+    background-color: #3b82f6;
+}
+
+.step-circle.completed {
+    background-color: #10b981;
+}
+
+.step-circle.pending {
+    background-color: #d1d5db;
+    color: #6b7280;
+}
